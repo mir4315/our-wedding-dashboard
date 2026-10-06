@@ -23,7 +23,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 const firebaseConfig={apiKey:"AIzaSyDX26IG3C_EZxIJxVjMbxD1QLAriZIVqK8",authDomain:"donga-mir-wedding.firebaseapp.com",projectId:"donga-mir-wedding",storageBucket:"donga-mir-wedding.firebasestorage.app",messagingSenderId:"156691758159",appId:"1:156691758159:web:1287bb255c9afedea5fe3a"};
 const allowed=new Set(["kimidong12@gmail.com","onthesummit15@gmail.com"]);
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),provider=new GoogleAuthProvider();
@@ -45,7 +45,10 @@ window.addEventListener("DOMContentLoaded",()=>{
    };
    const snap=await getDoc(sharedRef);
    if(snap.exists()&&snap.data().data){applyRemote(snap.data().data)} else {await window.cloudSave()}
-   if(unsub)unsub();unsub=onSnapshot(sharedRef,s=>{if(!s.exists()||!s.data().data)return;const remote=s.data().data;let changed=false;Object.entries(remote).forEach(([k,v])=>{if(localStorage.getItem(k)!==v)changed=true});if(changed)applyRemote(remote)});
+   // 안정성 우선: 자기 저장을 다시 받아 전체 화면을 재렌더링하는 실시간 루프를 사용하지 않습니다.
+   // 다른 기기의 변경은 페이지를 다시 열거나 '동기화' 버튼으로 불러옵니다.
+   let sync=document.getElementById("syncBtn");
+   if(!sync){sync=document.createElement("button");sync.id="syncBtn";sync.textContent="↻ 동기화";sync.style.padding="4px 8px";status.prepend(sync);sync.onclick=async()=>{const latest=await getDoc(sharedRef);if(latest.exists()&&latest.data().data){applyRemote(latest.data().data);const badge=document.getElementById("saveBadge");if(badge)badge.textContent="✓ 최신 데이터 동기화"}}}
 
  });
 });
