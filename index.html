@@ -31,18 +31,22 @@ const sharedRef=doc(db,"wedding","shared");
 let applying=false,timer=null,unsub=null;
 window.cloudSave=()=>{if(!auth.currentUser||!allowed.has(auth.currentUser.email)||applying)return;const badge=document.getElementById("saveBadge");if(badge)badge.textContent="저장 중…";clearTimeout(timer);timer=setTimeout(async()=>{const payload={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);payload[k]=localStorage.getItem(k)}await setDoc(sharedRef,{data:payload,updatedAt:Date.now(),updatedBy:auth.currentUser.email},{merge:true});if(badge)badge.textContent="✓ 공동저장 완료"},350)};
 window.addEventListener("DOMContentLoaded",()=>{
- const gate=document.createElement("div");gate.id="authGate";gate.className="authGate";gate.innerHTML='<div class="authBox"><div style="font-size:42px">💍</div><h2>동아-미르 라부라부</h2><p class="muted">두 사람만 사용하는 결혼 준비 대시보드입니다.</p><button id="googleLogin">Google로 로그인</button><p id="authMsg" class="muted"></p></div>';document.body.appendChild(gate);
+ const gate=document.createElement("div");gate.id="authGate";gate.className="authGate";gate.innerHTML='<div class="authBox"><div style="font-size:42px">💍</div><h2>동아-미르 라부라부</h2><p class="muted">두 사람만 사용하는 결혼 준비 대시보드입니다.</p><button id="googleLogin" style="display:none">Google로 로그인</button><p id="authMsg" class="muted">로그인 상태 확인 중…</p></div>';document.body.appendChild(gate);
  document.getElementById("googleLogin").onclick=async()=>{try{await signInWithPopup(auth,provider)}catch(e){document.getElementById("authMsg").textContent="로그인에 실패했습니다: "+e.message}};
  onAuthStateChanged(auth,async user=>{
-   if(!user){gate.style.display="flex";return}
+   if(!user){gate.style.display="flex";document.getElementById("googleLogin").style.display="inline-block";document.getElementById("authMsg").textContent="";return}
    if(!allowed.has(user.email)){document.getElementById("authMsg").textContent="허용되지 않은 계정입니다.";await signOut(auth);return}
    gate.style.display="none";
    let status=document.getElementById("authStatus");if(!status){status=document.createElement("div");status.id="authStatus";status.className="authStatus";document.body.appendChild(status)}
    status.innerHTML=user.email+' · <button id="logoutBtn" style="padding:4px 8px">로그아웃</button>';document.getElementById("logoutBtn").onclick=()=>signOut(auth);
+   const applyRemote=(remote)=>{applying=true;Object.entries(remote||{}).forEach(([k,v])=>localStorage.setItem(k,v));applying=false;
+     document.querySelectorAll('[data-save]').forEach(x=>{x.value=localStorage.getItem(x.dataset.save)||''});
+     if(typeof render==='function')render();if(typeof drawAll==='function')drawAll();
+   };
    const snap=await getDoc(sharedRef);
-   if(snap.exists()&&snap.data().data){applying=true;Object.entries(snap.data().data).forEach(([k,v])=>localStorage.setItem(k,v));applying=false;location.reload();return}
-   await window.cloudSave();
-   if(unsub)unsub();unsub=onSnapshot(sharedRef,s=>{if(!s.exists()||!s.data().data)return;const remote=s.data().data;let changed=false;applying=true;Object.entries(remote).forEach(([k,v])=>{if(localStorage.getItem(k)!==v){localStorage.setItem(k,v);changed=true}});applying=false;if(changed)location.reload()});
+   if(snap.exists()&&snap.data().data){applyRemote(snap.data().data)} else {await window.cloudSave()}
+   if(unsub)unsub();unsub=onSnapshot(sharedRef,s=>{if(!s.exists()||!s.data().data)return;const remote=s.data().data;let changed=false;Object.entries(remote).forEach(([k,v])=>{if(localStorage.getItem(k)!==v)changed=true});if(changed)applyRemote(remote)});
+
  });
 });
 </script></head>
