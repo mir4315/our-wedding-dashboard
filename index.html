@@ -18,7 +18,16 @@
 .taskmeta select,.taskmeta input{width:auto;min-width:92px;padding:5px 7px;font-size:12px}
 .deadlineSoon{color:#9c3d46;font-weight:800}.deadlineDone{color:#777}
 .moneySummary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}.moneySummary>div{background:#fff7f5;border-radius:12px;padding:12px}
-@media(max-width:600px){.moneySummary{grid-template-columns:1fr 1fr}.task{grid-template-columns:28px 1fr}.task>.tag,.task>.taskmeta{grid-column:2}.authStatus{right:8px;bottom:8px}.saveBadge{left:8px;bottom:8px}}
+@media(max-width:600px){
+.moneySummary{grid-template-columns:1fr 1fr}
+.task{grid-template-columns:28px 1fr}.task>.tag,.task>.taskmeta{grid-column:2}
+nav{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:8px;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:8px 2px 10px}
+nav::-webkit-scrollbar{display:none}
+nav button{flex:0 0 auto;white-space:nowrap;word-break:keep-all;min-width:max-content;padding:10px 14px;font-size:14px}
+.authStatus{right:8px;bottom:8px;max-width:72vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:6px 9px;font-size:11px}
+.authStatus button{font-size:11px;padding:3px 6px!important}
+.saveBadge{left:8px;bottom:8px;max-width:25vw;white-space:nowrap;overflow:hidden;padding:6px 8px;font-size:11px}
+}
 </style>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
